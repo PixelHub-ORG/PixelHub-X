@@ -116,13 +116,20 @@ def list_dataset():
     )
 
 
+@dataset_bp.route("/home/leaderboard", methods=["GET"])
+def home_leaderboard():
+    period = request.args.get("period", "week")  # Por defecto semana
+    leaderboard_data = dataset_service.get_dataset_leaderboard(period=period)
+    return render_template("dataset/leaderboard.html", leaderboard=leaderboard_data)
+
+
 @dataset_bp.route("/dataset/file/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files["file"]
     temp_folder = current_user.temp_folder()
 
-    if not file or not file.filename.endswith(".uvl"):
+    if not file or not file.filename.endswith(".csv"):
         return jsonify({"message": "No valid file"}), 400
 
     # create temp folder

@@ -33,6 +33,10 @@ def create_app(config_name="development"):
     # Register modules
     module_manager = ModuleManager(app)
     module_manager.register_modules()
+    
+    #el medium WI
+    from app.modules.badge.routes import badge_bp
+    app.register_blueprint(badge_bp)
 
     # Register login manager
     from flask_login import LoginManager

@@ -1,0 +1,66 @@
+{% extends "base_template.html" %}
+
+{% block title %}Top Datasets{% endblock %}
+
+{% block content %}
+
+<!-- Selector de periodo -->
+<div class="text-center mb-4">
+    <form method="get" action="{{ url_for('dataset.home_leaderboard') }}">
+        <label for="period" class="me-2">Select period:</label>
+        <select name="period" id="period" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+            <option value="week" {% if request.args.get('period', 'week') == 'week' %}selected{% endif %}>This Week</option>
+            <option value="month" {% if request.args.get('period') == 'month' %}selected{% endif %}>This Month</option>
+        </select>
+    </form>
+</div>
+
+<!-- Título dinámico -->
+<h1 class="h3 mb-4 text-center">
+    Top 3 Trending Datasets 
+    {% if request.args.get('period', 'week') == 'week' %}
+        This Week
+    {% else %}
+        This Month
+    {% endif %}
+</h1>
+
+<!-- Lista de datasets -->
+{% if leaderboard %}
+<div class="row g-4">
+    {% for dataset in leaderboard %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">
+                    <a href="{{ url_for('dataset.subdomain_index', doi=dataset.ds_meta_data.dataset_doi) }}" 
+                       style="color: black; text-decoration: none;">
+                        {{ dataset.ds_meta_data.title }}
+                    </a>
+                </h5>
+                <p class="card-text mb-1">
+                    <strong>Main Author:</strong> 
+                    {{ dataset.ds_meta_data.authors[0].name if dataset.ds_meta_data.authors else "Unknown" }}
+                </p>
+                <p class="card-text mb-1">
+                    <strong>Community:</strong> 
+                    {{ dataset.community or 'N/A' }}
+                </p>
+                <p class="card-text mb-1">
+                    <strong>Downloads:</strong> {{ dataset.get_download_count() }}
+                </p>
+                <a href="{{ url_for('dataset.download_dataset', dataset_id=dataset.id) }}" class="btn btn-primary mt-auto">
+                    Download
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info text-center">
+    No datasets available for this period.
+</div>
+{% endif %}
+
+{% endblock %}

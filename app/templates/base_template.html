@@ -71,6 +71,14 @@ chico sundermann">
                     </a>
                 </li>
 
+                <li class="sidebar-item {{ 'active' if request.endpoint == 'dataset.home_leaderboard' else '' }}">
+                    <a class="sidebar-link" href="{{ url_for('dataset.home_leaderboard') }}">
+                        <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Leaderboard</span>
+                    </a>
+                </li>
+
+
+
                 {% if current_user.is_anonymous %}
 
                     <li class="sidebar-header">

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from flask_login import current_user
@@ -7,6 +7,8 @@ from sqlalchemy import desc, func
 
 from app.modules.dataset.models import Author, DataSet, DOIMapping, DSDownloadRecord, DSMetaData, DSViewRecord
 from core.repositories.BaseRepository import BaseRepository
+from app import db
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,37 @@ class DSDownloadRecordRepository(BaseRepository):
 
     def total_dataset_downloads(self) -> int:
         return self.model.query.count()
+
+    def top_3_dowloaded_datasets_per_week(self, period="week", limit=3) -> DataSet:
+        """
+        Devuelve los datasets más descargados en el periodo dado.
+        period: "week" o "month"
+        """
+        now = datetime.now()
+        if period == "week":
+            since = now - timedelta(days=7)
+        elif period == "month":
+            since = now - timedelta(days=30)
+        else:
+            raise ValueError("Periodo no soportado: usa 'week' o 'month'")
+        results = (
+            db.session.query(
+                DSDownloadRecord.dataset_id,
+                func.count(DSDownloadRecord.id).label("downloads")
+            )
+            .filter(DSDownloadRecord.download_date >= since)
+            .group_by(DSDownloadRecord.dataset_id)
+            .order_by(desc("downloads"))
+            .limit(limit)
+            .all()
+        )
+
+        top_datasets = []
+        for r in results:
+            dataset = DataSet.query.get(r.dataset_id)
+            top_datasets.append(dataset)
+
+        return top_datasets
 
 
 class DSMetaDataRepository(BaseRepository):
