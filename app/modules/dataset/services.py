@@ -79,7 +79,8 @@ class DataSetService(BaseService):
             key=lambda x: (x[1], x[0].get_download_count(), x[0].created_at),
             reverse=True
         )
-        return [ds for ds, _ in scored_datasets_sorted[:limit]]
+        datasets_with_doi = [d for d, _ in scored_datasets_sorted if d.ds_meta_data and d.ds_meta_data.dataset_doi]
+        return [ds for ds in datasets_with_doi[:limit]]
         
     def get_unsynchronized(self, current_user_id: int) -> DataSet:
         return self.repository.get_unsynchronized(current_user_id)
